@@ -527,6 +527,8 @@ if (commandName === 'addbook') {
   await interaction.deferReply(); // For potentially slow operations
   
   const booksInput = options.getString('books');
+  const bookLink = options.getString('link'); // Optional link provided by the user
+
   if (!booksInput || !booksInput.includes(' by ')) {
     return interaction.editReply('Please provide a list of books in the format: "Title by Author; Title by Author"');
   }
@@ -548,14 +550,21 @@ if (commandName === 'addbook') {
       continue;
     }
 
-    // Fetch book data from Open Library API
+    // Fetch book data from multiple APIs
     const bookData = await fetchBookData(`${title} ${author}`);
     if (!bookData) {
-      // If the book is not found, allow manual addition
-      userData.count += 1;
-      userData.books.push(`${title} by ${author}`);
-      addedBooks.push(`${title} by ${author}`);
-      continue;
+      // If the book is not found, check if the user provided a link
+      if (bookLink) {
+        // Add the book manually using the provided link
+        userData.count += 1;
+        userData.books.push(`${title} by ${author} (Link: ${bookLink})`);
+        addedBooks.push(`${title} by ${author} (Link: ${bookLink})`);
+        continue;
+      } else {
+        // If no link is provided, mark the book as failed
+        failedBooks.push(entry);
+        continue;
+      }
     }
 
     // Add the book to the user's list
@@ -582,7 +591,6 @@ if (commandName === 'addbook') {
 
   interaction.editReply({ embeds: [embed] });
 }
-
     // Show book count
     else if (commandName === 'bookcount') {
       const userData = database.loadUserBooks(userId);
