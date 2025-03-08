@@ -496,7 +496,6 @@ const commands = [
   new SlashCommandBuilder()
     .setName('help')
     .setDescription('Display help message'),
-);
 
 // Bot login
 client.once('ready', async () => {
