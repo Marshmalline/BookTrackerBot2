@@ -339,12 +339,15 @@ const moodBooks = {
 // Define slash commands
 const commands = [
   new SlashCommandBuilder()
-  .setName('addbook')
-  .setDescription('Add one or more books to your list')
-  .addStringOption(option =>
-    option.setName('books')
-      .setDescription('List of books to add (format: "Title by Author", separate multiple books with a semicolon ";")')
-      .setRequired(true)),
+    .setName('addbook')
+    .setDescription('Add one or more books to your list')
+    .addStringOption(option =>
+      option.setName('books')
+        .setDescription('List of books to add (format: "Title by Author", separate multiple books with a semicolon ";")')
+        .setRequired(true))
+    .addStringOption(option =>
+      option.setName('link')
+        .setDescription('Optional: Provide a link to the book if the bot cannot find it')),
   
   new SlashCommandBuilder()
     .setName('bookcount')
