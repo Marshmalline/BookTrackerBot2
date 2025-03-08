@@ -523,47 +523,63 @@ client.on('interactionCreate', async interaction => {
     const { commandName, options } = interaction;
     const userId = interaction.user.id;
     
-    // Add a book
-    if (commandName === 'addbook') {
-      await interaction.deferReply(); // For potentially slow operations
-      
-      const bookName = options.getString('title');
-      if (!bookName) {
-        return interaction.editReply('Please provide a book name!');
-      }
+// Add one or more books
+if (commandName === 'addbook') {
+  await interaction.deferReply(); // For potentially slow operations
+  
+  const booksInput = options.getString('books');
+  if (!booksInput) {
+    return interaction.editReply('Please provide a list of books!');
+  }
 
-      let userData = database.loadUserBooks(userId);
-      if (!userData) {
-        userData = { count: 0, books: [] };
-      }
+  // Split the input into individual books
+  const bookEntries = booksInput.split(';').map(entry => entry.trim());
+  let userData = database.loadUserBooks(userId);
+  if (!userData) {
+    userData = { count: 0, books: [] };
+  }
 
-      // Fetch book data from Open Library API
-      const bookData = await fetchBookData(bookName);
-      if (!bookData) {
-        return interaction.editReply('Could not find the book. Please try again with a different title or author.');
-      }
+  const addedBooks = [];
+  const failedBooks = [];
 
-      // Add the book to the user's list
-      userData.count += 1;
-      userData.books.push(bookData.title);
-      database.saveUserBooks(userId, userData.count, userData.books); // Save to database
-
-      // Update reading streak
-      const today = new Date().toISOString().split('T')[0];
-      database.saveReadingStreak(userId, today);
-
-      // Create an embed with the book cover
-      const embed = new EmbedBuilder()
-        .setColor('#800080') // Purple color
-        .setTitle('Book Added')
-        .setDescription(`Added "${bookData.title}" to your list!`)
-        .addFields({ name: 'Author', value: bookData.author, inline: true })
-        .addFields({ name: 'Genre', value: bookData.genre, inline: true })
-        .setThumbnail(bookData.coverUrl) // Book cover
-        .setFooter({ text: 'Happy reading! 📚' });
-
-      interaction.editReply({ embeds: [embed] });
+  for (const entry of bookEntries) {
+    const [title, author] = entry.split(' by ').map(part => part.trim());
+    if (!title || !author) {
+      failedBooks.push(entry);
+      continue;
     }
+
+    // Fetch book data from Open Library API
+    const bookData = await fetchBookData(`${title} ${author}`);
+    if (!bookData) {
+      failedBooks.push(entry);
+      continue;
+    }
+
+    // Add the book to the user's list
+    userData.count += 1;
+    userData.books.push(bookData.title);
+    addedBooks.push(bookData.title);
+  }
+
+  // Save the updated book list to the database
+  database.saveUserBooks(userId, userData.count, userData.books);
+
+  // Update reading streak
+  const today = new Date().toISOString().split('T')[0];
+  database.saveReadingStreak(userId, today);
+
+  // Create an embed with the results
+  const embed = new EmbedBuilder()
+    .setColor('#800080') // Purple color
+    .setTitle('Books Added')
+    .setDescription(addedBooks.length > 0 ? `Added ${addedBooks.length} book(s) to your list!` : 'No books were added.')
+    .addFields({ name: 'Added Books', value: addedBooks.join('\n') || 'None', inline: true })
+    .addFields({ name: 'Failed to Add', value: failedBooks.join('\n') || 'None', inline: true })
+    .setFooter({ text: 'Happy reading! 📚' });
+
+  interaction.editReply({ embeds: [embed] });
+}
 
     // Show book count
     else if (commandName === 'bookcount') {
