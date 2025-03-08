@@ -363,10 +363,10 @@ const commands = [
     .addStringOption(option =>
       option.setName('title')
         .setDescription('The title and author of the book (format: "Title by Author")')
-        .setRequired(true))
+        .setRequired(false)) // Make this optional
     .addStringOption(option =>
       option.setName('link')
-        .setDescription('Optional: Provide a link to the book if the bot cannot find it')),
+        .setDescription('Optional: Provide a link to the book')),
   
   new SlashCommandBuilder()
     .setName('listbooks')
@@ -499,6 +499,7 @@ const commands = [
   new SlashCommandBuilder()
     .setName('help')
     .setDescription('Display help message'),
+];
 
 // Bot login
 client.once('ready', async () => {
@@ -635,38 +636,55 @@ if (commandName === 'addbook') {
       }
     }
 
-    else if (commandName === 'recommendqueer') {
+   else if (commandName === 'recommendqueer') {
   await interaction.deferReply(); // For potentially slow operations
   
-  const bookQuery = options.getString('title');
-  const bookLink = options.getString('link'); // Optional link provided by the user
+  const bookQuery = options.getString('title'); // Optional title
+  const bookLink = options.getString('link'); // Optional link
 
-  if (!bookQuery || !bookQuery.includes(' by ')) {
+  if (!bookQuery && !bookLink) {
+    return interaction.editReply('Please provide either a book title and author (format: "Title by Author") or a link to the book.');
+  }
+
+  if (bookQuery && !bookQuery.includes(' by ')) {
     return interaction.editReply('Please provide a book title and author in the format: "Title by Author"');
   }
 
-  // Fetch book data from multiple APIs
+  if (bookLink) {
+    // If a link is provided, save the book manually
+    const [title, author] = bookQuery ? bookQuery.split(' by ').map(part => part.trim()) : ['Unknown Title', 'Unknown Author'];
+    database.saveQueerBook(title, author, 'No description available.', 'Unknown Genre', bookLink);
+
+    const embed = new EmbedBuilder()
+      .setColor('#800080') // Purple color
+      .setTitle('Queer Book Added')
+      .setDescription(`Added "${title}" by ${author} to the queer books list!`)
+      .addFields({ name: 'Link', value: bookLink, inline: true })
+      .setFooter({ text: 'Thank you for contributing! 📚' });
+
+    return interaction.editReply({ embeds: [embed] });
+  }
+
+  // If a title is provided, fetch book data from multiple APIs
   const bookData = await fetchBookData(bookQuery);
   if (!bookData) {
-    // If the book is not found, check if the user provided a link
-    if (bookLink) {
-      // Add the book manually using the provided link
-      const [title, author] = bookQuery.split(' by ').map(part => part.trim());
-      database.saveQueerBook(title, author, 'No description available.', 'Unknown Genre', bookLink);
-
-      const embed = new EmbedBuilder()
-        .setColor('#800080') // Purple color
-        .setTitle('Queer Book Added')
-        .setDescription(`Added "${title}" by ${author} to the queer books list!`)
-        .addFields({ name: 'Link', value: bookLink, inline: true })
-        .setFooter({ text: 'Thank you for contributing! 📚' });
-
-      return interaction.editReply({ embeds: [embed] });
-    } else {
-      // If no link is provided, inform the user
-      return interaction.editReply('Could not find the book. Please try again with a different title or author, or provide a link to the book.');
-    }
+    return interaction.editReply('Could not find the book. Please try again with a different title or author, or provide a link to the book.');
   }
+
+  // If the book is found, add it to the queer books list
+  database.saveQueerBook(bookData.title, bookData.author, bookData.description, bookData.genre, bookData.coverUrl);
+
+  const embed = new EmbedBuilder()
+    .setColor('#800080') // Purple color
+    .setTitle('Queer Book Added')
+    .setDescription(`Added "${bookData.title}" by ${bookData.author} to the queer books list!`)
+    .addFields({ name: 'Genre', value: bookData.genre, inline: true })
+    .addFields({ name: 'Description', value: bookData.description })
+    .setThumbnail(bookData.coverUrl) // Book cover
+    .setFooter({ text: 'Thank you for contributing! 📚' });
+
+  interaction.editReply({ embeds: [embed] });
+}
 
   // If the book is found, add it to the queer books list
   database.saveQueerBook(bookData.title, bookData.author, bookData.description, bookData.genre, bookData.coverUrl);
