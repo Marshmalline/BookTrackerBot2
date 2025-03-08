@@ -358,12 +358,15 @@ const commands = [
     .setDescription('Get a book recommendation'),
   
   new SlashCommandBuilder()
-  .setName('recommendqueer')
-  .setDescription('Add a queer book to the recommendation list')
-  .addStringOption(option =>
-    option.setName('title')
-      .setDescription('The title and author of the book (format: "Title by Author")')
-      .setRequired(true)),
+    .setName('recommendqueer')
+    .setDescription('Add a queer book to the recommendation list')
+    .addStringOption(option =>
+      option.setName('title')
+        .setDescription('The title and author of the book (format: "Title by Author")')
+        .setRequired(true))
+    .addStringOption(option =>
+      option.setName('link')
+        .setDescription('Optional: Provide a link to the book if the bot cannot find it')),
   
   new SlashCommandBuilder()
     .setName('listbooks')
@@ -632,31 +635,52 @@ if (commandName === 'addbook') {
       }
     }
 
-    // Recommend a queer book
-else if (commandName === 'recommendqueer') {
-  await interaction.deferReply();
+    else if (commandName === 'recommendqueer') {
+  await interaction.deferReply(); // For potentially slow operations
   
   const bookQuery = options.getString('title');
+  const bookLink = options.getString('link'); // Optional link provided by the user
+
   if (!bookQuery || !bookQuery.includes(' by ')) {
     return interaction.editReply('Please provide a book title and author in the format: "Title by Author"');
   }
 
+  // Fetch book data from multiple APIs
   const bookData = await fetchBookData(bookQuery);
-  if (bookData) {
-    database.saveQueerBook(bookData.title, bookData.author, bookData.description, bookData.genre, bookData.coverUrl);
-    const embed = new EmbedBuilder()
-      .setColor('#800080') // Purple color
-      .setTitle('Queer Book Added')
-      .setDescription(`Added "${bookData.title}" by ${bookData.author} to the queer books list!`)
-      .addFields({ name: 'Genre', value: bookData.genre, inline: true })
-      .addFields({ name: 'Description', value: bookData.description })
-      .setThumbnail(bookData.coverUrl) // Book cover
-      .setFooter({ text: 'Thank you for contributing! 📚' });
+  if (!bookData) {
+    // If the book is not found, check if the user provided a link
+    if (bookLink) {
+      // Add the book manually using the provided link
+      const [title, author] = bookQuery.split(' by ').map(part => part.trim());
+      database.saveQueerBook(title, author, 'No description available.', 'Unknown Genre', bookLink);
 
-    interaction.editReply({ embeds: [embed] });
-  } else {
-    interaction.editReply('Could not find the book. Please try again with a different title or author.');
+      const embed = new EmbedBuilder()
+        .setColor('#800080') // Purple color
+        .setTitle('Queer Book Added')
+        .setDescription(`Added "${title}" by ${author} to the queer books list!`)
+        .addFields({ name: 'Link', value: bookLink, inline: true })
+        .setFooter({ text: 'Thank you for contributing! 📚' });
+
+      return interaction.editReply({ embeds: [embed] });
+    } else {
+      // If no link is provided, inform the user
+      return interaction.editReply('Could not find the book. Please try again with a different title or author, or provide a link to the book.');
+    }
   }
+
+  // If the book is found, add it to the queer books list
+  database.saveQueerBook(bookData.title, bookData.author, bookData.description, bookData.genre, bookData.coverUrl);
+
+  const embed = new EmbedBuilder()
+    .setColor('#800080') // Purple color
+    .setTitle('Queer Book Added')
+    .setDescription(`Added "${bookData.title}" by ${bookData.author} to the queer books list!`)
+    .addFields({ name: 'Genre', value: bookData.genre, inline: true })
+    .addFields({ name: 'Description', value: bookData.description })
+    .setThumbnail(bookData.coverUrl) // Book cover
+    .setFooter({ text: 'Thank you for contributing! 📚' });
+
+  interaction.editReply({ embeds: [embed] });
 }
 
     // List all books
