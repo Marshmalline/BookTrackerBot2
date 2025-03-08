@@ -1202,3 +1202,20 @@ if (commandName === 'addbook') {
 
 // Start the bot
 client.login(process.env.TOKEN); // Use the token from environment variables
+
+// Add this at the end of your file, after client.login(process.env.TOKEN);
+
+// Bind to a port for Render
+const http = require('http');
+
+// Create a simple HTTP server to keep the process alive
+const server = http.createServer((req, res) => {
+  res.writeHead(200, { 'Content-Type': 'text/plain' });
+  res.end('Discord bot is running!');
+});
+
+// Use the PORT environment variable provided by Render
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => {
+  console.log(`Bot is running on port ${PORT}`);
+});
