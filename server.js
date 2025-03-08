@@ -347,7 +347,7 @@ const commands = [
         .setRequired(true))
     .addStringOption(option =>
       option.setName('link')
-        .setDescription('Optional: Provide a link to the book if the bot cannot find it')),
+        .setDescription('Optional: Provide a link to the book if the bot cannot find it'),
   
   new SlashCommandBuilder()
     .setName('bookcount')
