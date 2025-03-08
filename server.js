@@ -339,12 +339,12 @@ const moodBooks = {
 // Define slash commands
 const commands = [
   new SlashCommandBuilder()
-    .setName('addbook')
-    .setDescription('Add a book to your list')
-    .addStringOption(option => 
-      option.setName('title')
-        .setDescription('The name of the book')
-        .setRequired(true)),
+  .setName('addbook')
+  .setDescription('Add one or more books to your list')
+  .addStringOption(option =>
+    option.setName('books')
+      .setDescription('List of books to add (format: "Title by Author", separate multiple books with a semicolon ";")')
+      .setRequired(true)),
   
   new SlashCommandBuilder()
     .setName('bookcount')
@@ -355,12 +355,12 @@ const commands = [
     .setDescription('Get a book recommendation'),
   
   new SlashCommandBuilder()
-    .setName('recommendqueer')
-    .setDescription('Add a queer book to the recommendation list')
-    .addStringOption(option => 
-      option.setName('title')
-        .setDescription('The title or author of the book')
-        .setRequired(true)),
+  .setName('recommendqueer')
+  .setDescription('Add a queer book to the recommendation list')
+  .addStringOption(option =>
+    option.setName('title')
+      .setDescription('The title and author of the book (format: "Title by Author")')
+      .setRequired(true)),
   
   new SlashCommandBuilder()
     .setName('listbooks')
@@ -522,14 +522,13 @@ client.on('interactionCreate', async interaction => {
   try {
     const { commandName, options } = interaction;
     const userId = interaction.user.id;
-    
 // Add one or more books
 if (commandName === 'addbook') {
   await interaction.deferReply(); // For potentially slow operations
   
   const booksInput = options.getString('books');
-  if (!booksInput) {
-    return interaction.editReply('Please provide a list of books!');
+  if (!booksInput || !booksInput.includes(' by ')) {
+    return interaction.editReply('Please provide a list of books in the format: "Title by Author; Title by Author"');
   }
 
   // Split the input into individual books
@@ -621,31 +620,31 @@ if (commandName === 'addbook') {
     }
 
     // Recommend a queer book
-    else if (commandName === 'recommendqueer') {
-      await interaction.deferReply();
-      
-      const bookQuery = options.getString('title');
-      if (!bookQuery) {
-        return interaction.editReply('Please provide a book title or author!');
-      }
+else if (commandName === 'recommendqueer') {
+  await interaction.deferReply();
+  
+  const bookQuery = options.getString('title');
+  if (!bookQuery || !bookQuery.includes(' by ')) {
+    return interaction.editReply('Please provide a book title and author in the format: "Title by Author"');
+  }
 
-      const bookData = await fetchBookData(bookQuery);
-      if (bookData) {
-        database.saveQueerBook(bookData.title, bookData.author, bookData.description, bookData.genre, bookData.coverUrl);
-        const embed = new EmbedBuilder()
-          .setColor('#800080') // Purple color
-          .setTitle('Queer Book Added')
-          .setDescription(`Added "${bookData.title}" by ${bookData.author} to the queer books list!`)
-          .addFields({ name: 'Genre', value: bookData.genre, inline: true })
-          .addFields({ name: 'Description', value: bookData.description })
-          .setThumbnail(bookData.coverUrl) // Book cover
-          .setFooter({ text: 'Thank you for contributing! 📚' });
+  const bookData = await fetchBookData(bookQuery);
+  if (bookData) {
+    database.saveQueerBook(bookData.title, bookData.author, bookData.description, bookData.genre, bookData.coverUrl);
+    const embed = new EmbedBuilder()
+      .setColor('#800080') // Purple color
+      .setTitle('Queer Book Added')
+      .setDescription(`Added "${bookData.title}" by ${bookData.author} to the queer books list!`)
+      .addFields({ name: 'Genre', value: bookData.genre, inline: true })
+      .addFields({ name: 'Description', value: bookData.description })
+      .setThumbnail(bookData.coverUrl) // Book cover
+      .setFooter({ text: 'Thank you for contributing! 📚' });
 
-        interaction.editReply({ embeds: [embed] });
-      } else {
-        interaction.editReply('Could not find the book. Please try again with a different title or author.');
-      }
-    }
+    interaction.editReply({ embeds: [embed] });
+  } else {
+    interaction.editReply('Could not find the book. Please try again with a different title or author.');
+  }
+}
 
     // List all books
     else if (commandName === 'listbooks') {
