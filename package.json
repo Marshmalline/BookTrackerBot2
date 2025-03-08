@@ -1,0 +1,20 @@
+{
+  "name": "booktrackerbot",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "keywords": [],
+  "author": "@treetree10th",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.8.2",
+    "better-sqlite3": "^11.8.1",
+    "discord.js": "^14.18.0",
+    "express": "^4.21.2",
+    "ping-monitor": "^0.8.2"
+  },
+  "description": "A Discord bot for tracking books"
+}
