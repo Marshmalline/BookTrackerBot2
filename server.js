@@ -551,7 +551,10 @@ if (commandName === 'addbook') {
     // Fetch book data from Open Library API
     const bookData = await fetchBookData(`${title} ${author}`);
     if (!bookData) {
-      failedBooks.push(entry);
+      // If the book is not found, allow manual addition
+      userData.count += 1;
+      userData.books.push(`${title} by ${author}`);
+      addedBooks.push(`${title} by ${author}`);
       continue;
     }
 
