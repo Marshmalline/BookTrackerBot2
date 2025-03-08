@@ -357,7 +357,7 @@ const commands = [
     .setName('recommend')
     .setDescription('Get a book recommendation'),
   
-  new SlashCommandBuilder()
+ new SlashCommandBuilder()
     .setName('recommendqueer')
     .setDescription('Add a queer book to the recommendation list')
     .addStringOption(option =>
@@ -670,6 +670,21 @@ if (commandName === 'addbook') {
   if (!bookData) {
     return interaction.editReply('Could not find the book. Please try again with a different title or author, or provide a link to the book.');
   }
+
+  // If the book is found, add it to the queer books list
+  database.saveQueerBook(bookData.title, bookData.author, bookData.description, bookData.genre, bookData.coverUrl);
+
+  const embed = new EmbedBuilder()
+    .setColor('#800080') // Purple color
+    .setTitle('Queer Book Added')
+    .setDescription(`Added "${bookData.title}" by ${bookData.author} to the queer books list!`)
+    .addFields({ name: 'Genre', value: bookData.genre, inline: true })
+    .addFields({ name: 'Description', value: bookData.description })
+    .setThumbnail(bookData.coverUrl) // Book cover
+    .setFooter({ text: 'Thank you for contributing! 📚' });
+
+  interaction.editReply({ embeds: [embed] });
+}
 
   // If the book is found, add it to the queer books list
   database.saveQueerBook(bookData.title, bookData.author, bookData.description, bookData.genre, bookData.coverUrl);
