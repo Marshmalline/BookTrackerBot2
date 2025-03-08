@@ -347,16 +347,17 @@ const commands = [
         .setRequired(true))
     .addStringOption(option =>
       option.setName('link')
-        .setDescription('Optional: Provide a link to the book if the bot cannot find it'),
-  
+        .setDescription('Optional: Provide a link to the book if the bot cannot find it')),
+
   new SlashCommandBuilder()
     .setName('bookcount')
     .setDescription('Check how many books you\'ve read'),
-  
+
   new SlashCommandBuilder()
     .setName('recommend')
     .setDescription('Get a book recommendation'),
-new SlashCommandBuilder()
+
+  new SlashCommandBuilder()
     .setName('recommendqueer')
     .setDescription('Add a queer book to the recommendation list')
     .addStringOption(option =>
@@ -366,11 +367,11 @@ new SlashCommandBuilder()
     .addStringOption(option =>
       option.setName('link')
         .setDescription('Optional: Provide a link to the book')),
-  
+
   new SlashCommandBuilder()
     .setName('listbooks')
     .setDescription('List all books you\'ve read'),
-  
+
   new SlashCommandBuilder()
     .setName('removebook')
     .setDescription('Remove a book from your list')
@@ -378,7 +379,7 @@ new SlashCommandBuilder()
       option.setName('title')
         .setDescription('The name of the book')
         .setRequired(true)),
-  
+
   new SlashCommandBuilder()
     .setName('setgoal')
     .setDescription('Set a reading goal')
@@ -387,11 +388,11 @@ new SlashCommandBuilder()
         .setDescription('Number of books to read')
         .setRequired(true)
         .setMinValue(1)),
-  
+
   new SlashCommandBuilder()
     .setName('progress')
     .setDescription('Check your progress toward your goal'),
-  
+
   new SlashCommandBuilder()
     .setName('challenge')
     .setDescription('Start a reading challenge')
@@ -400,15 +401,15 @@ new SlashCommandBuilder()
         .setDescription('Number of books for the challenge')
         .setRequired(true)
         .setMinValue(1)),
-  
+
   new SlashCommandBuilder()
     .setName('streak')
     .setDescription('Check your reading streak'),
-  
+
   new SlashCommandBuilder()
     .setName('streakadd')
     .setDescription('Log your daily reading to maintain your streak'),
-  
+
   new SlashCommandBuilder()
     .setName('streakoverride')
     .setDescription('Admin only: Override a user\'s streak')
@@ -421,11 +422,11 @@ new SlashCommandBuilder()
         .setDescription('New streak value')
         .setRequired(true)
         .setMinValue(0)),
-  
+
   new SlashCommandBuilder()
     .setName('leaderboard')
     .setDescription('See the top readers'),
-  
+
   new SlashCommandBuilder()
     .setName('bookclub')
     .setDescription('Book club commands')
@@ -437,23 +438,23 @@ new SlashCommandBuilder()
           option.setName('name')
             .setDescription('Name of the book club')
             .setRequired(true))),
-  
+
   new SlashCommandBuilder()
     .setName('achievements')
     .setDescription('View your achievements'),
-  
+
   new SlashCommandBuilder()
     .setName('points')
     .setDescription('Check your points'),
-  
+
   new SlashCommandBuilder()
     .setName('funfact')
     .setDescription('Get a fun fact about books'),
-  
+
   new SlashCommandBuilder()
     .setName('quote')
     .setDescription('Get a quote from a famous book'),
-  
+
   new SlashCommandBuilder()
     .setName('mood')
     .setDescription('Get a book recommendation based on your mood')
@@ -466,11 +467,11 @@ new SlashCommandBuilder()
           { name: 'Sad', value: 'sad' },
           { name: 'Adventurous', value: 'adventurous' }
         )),
-  
+
   new SlashCommandBuilder()
     .setName('profile')
     .setDescription('View your reading profile'),
-  
+
   new SlashCommandBuilder()
     .setName('setbio')
     .setDescription('Set your profile bio')
@@ -478,7 +479,7 @@ new SlashCommandBuilder()
       option.setName('bio')
         .setDescription('Your profile bio')
         .setRequired(true)),
-  
+
   new SlashCommandBuilder()
     .setName('setcolor')
     .setDescription('Set your profile color')
@@ -486,7 +487,7 @@ new SlashCommandBuilder()
       option.setName('color')
         .setDescription('Hex color code (e.g., #800080)')
         .setRequired(true)),
-  
+
   new SlashCommandBuilder()
     .setName('favorite')
     .setDescription('Add or remove a book from your favorites')
@@ -494,7 +495,7 @@ new SlashCommandBuilder()
       option.setName('title')
         .setDescription('The title of the book')
         .setRequired(true)),
-  
+
   new SlashCommandBuilder()
     .setName('help')
     .setDescription('Display help message'),
