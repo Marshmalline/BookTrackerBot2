@@ -1,0 +1,46 @@
+const express = require('express');
+const app = express();
+const PORT = process.env.PORT || 3000;
+const pingInterval = 5 * 60 * 1000; // 5 minutes in milliseconds
+
+// Health check endpoint for Uptime Robot
+app.get('/health', (req, res) => {
+  res.status(200).json({
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime()
+  });
+});
+
+// Start the server
+const server = app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
+
+// Import and start the bot
+require('./server.js');
+
+// Self-pinging mechanism to prevent Render from sleeping
+if (process.env.RENDER) { // Only run on Render
+  const keepAlive = () => {
+    const url = process.env.RENDER_EXTERNAL_URL || `http://localhost:${PORT}`;
+    fetch(`${url}/health`)
+      .then(res => console.log(`Keep-alive ping successful (${res.status})`))
+      .catch(err => console.error('Keep-alive ping failed:', err));
+  };
+
+  // Initial ping when starting
+  keepAlive();
+  
+  // Set up regular pings
+  setInterval(keepAlive, pingInterval);
+}
+
+// Graceful shutdown
+process.on('SIGTERM', () => {
+  console.log('SIGTERM signal received: closing HTTP server');
+  server.close(() => {
+    console.log('HTTP server closed');
+    process.exit(0);
+  });
+});
