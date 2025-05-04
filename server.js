@@ -701,7 +701,6 @@ if (commandName === 'addbook') {
     .setFooter({ text: 'Thank you for contributing! 📚' });
 
   interaction.editReply({ embeds: [embed] });
-}
 
   // If the book is found, add it to the queer books list
   database.saveQueerBook(bookData.title, bookData.author, bookData.description, bookData.genre, bookData.coverUrl);
